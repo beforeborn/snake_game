@@ -19,12 +19,13 @@ public:
    //定期执行更新
 	virtual void updateFrame(float t);
 
+	static float sepTime;
 	static int sepWidth;
 	static int sepHeight;
 	//Rect * edgeRect;
 	Vector<SnakeNode *> allBody;
-	SnakeNode* head = NULL;
-	SnakeNode* food = NULL;
+	SnakeNode* head;
+	SnakeNode* food;
 
 };
 

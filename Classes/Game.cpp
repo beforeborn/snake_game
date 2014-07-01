@@ -19,6 +19,7 @@ Game::~Game(void)
 
 int Game::sepHeight = 0;
 int Game::sepWidth = 0;
+float Game::sepTime=0.5;
 SnakeNode* head = NULL;
 SnakeNode* food = NULL;
 Vector<SnakeNode *> allBody;
@@ -105,16 +106,15 @@ bool Game::init()
 		//改变移动方向
 		int touchX = touch->getLocation().x;
 		int touchY = touch->getLocation().y;
-		SnakeNode * node = head;
-		int headX = head->getPositionX();
-		int headY = head->getPositionY();
+		int headX = head->node->getPositionX();
+		int headY = head->node->getPositionY();
 
 		setDir(head, touchX, touchY, headX, headY);
 
 		return true;
 	};
 
-	this->schedule(schedule_selector(Game::updateFrame), 0.2);
+	this->schedule(schedule_selector(Game::updateFrame), Game::sepTime);
 
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(litener, this);
 
@@ -127,10 +127,12 @@ void Game::menuCallBack(Ref * obj)
 
 void setDir(SnakeNode * node, int touchX, int touchY, int nodeX, int nodeY)
 {
+	node->m_last_dir=node->m_dir;
 	if (node->m_dir == ENUM_DIR::DIR_RIGHT || node->m_dir == ENUM_DIR::DIR_LEFT)
 	{
 		if ((touchY - nodeY) >= 60)
 		{
+			
 			node->m_dir = ENUM_DIR::DIR_UP;
 		}
 		else if ((nodeY - touchY) >= 60)
@@ -174,23 +176,22 @@ void setDir(SnakeNode * node, int touchX, int touchY, int nodeX, int nodeY)
 
 void Game::updateFrame(float t)
 {
-	
-
 	//检测食物碰撞
-	if (head->boundingBox().intersectsRect(food->node->boundingBox()))
-	{
-		log("crushed");
+	if (head->node->boundingBox().containsPoint(Point(food->node->boundingBox().getMidX(),food->node->boundingBox().getMidY())))
+	{		
+	
 		//添加新节点，并设置其位置和方向
 		int index = allBody.size() - 1;
 		SnakeNode* preNode = allBody.at(index);
+		food->setAnchorPoint(Point::ZERO);
 		setNodeLocation(food, preNode);
-
+		log("food.x=%f,food.node.x=%f",food->getPositionX(),food->node->getPositionX());
 		this->addBody(food);
 		food = SnakeNode::create(ENUM_TYPE::TYPE_FOOD);
 		this->addChild(food);
 	}
 	//检测边缘碰撞
-	if (nodeImpact(head, edgeRect))
+	if (nodeImpact(head->node, edgeRect))
 	{
 		this->menuCallBack(this);
 	}
@@ -201,11 +202,43 @@ void Game::updateFrame(float t)
 
 void Game::moveBodys()
 {
+	for(int i=allBody.size()-1;i>=1;i--)
+	{
+		SnakeNode* cur=allBody.at(i);
+		SnakeNode* pre=allBody.at(i-1);
 
+		if((int)cur->node->getPositionX()==(int)pre->node->getPositionX())
+		{
+			if(pre->node->getPositionY()>cur->node->getPositionY())
+			{
+				cur->m_dir=ENUM_DIR::DIR_UP;
+			}else
+			{
+				cur->m_dir=ENUM_DIR::DIR_DOWN;
+			}
+		}
+
+		if((int)cur->node->getPositionY()==(int)pre->node->getPositionY())
+		{
+			if(pre->node->getPositionX()>cur->node->getPositionX())
+			{
+				cur->m_dir=ENUM_DIR::DIR_RIGHT;
+			}else
+			{
+				cur->m_dir=ENUM_DIR::DIR_LEFT;
+			}
+		}
+		
+	}
+
+	for(int i=0;i<allBody.size();i++)
+	{
+		allBody.at(i)->gameLogic();
+	}
 }
 void Game::addBody(SnakeNode* body)
 {
-
+	allBody.pushBack(body);
 }
 
 bool nodeImpact(Node *node, Rect * edage)
@@ -240,30 +273,25 @@ void setNodeLocation(SnakeNode * newNode, SnakeNode * preNode)
 	switch (preNode->m_dir)
 	{
 	case ENUM_DIR::DIR_LEFT:
-		newNode->setPositionX(preNode->getPositionX() + Game::sepWidth);
-		newNode->setPositionY(preNode->getPositionY());
+		newNode->setPositionX(preNode->node->getPositionX() + Game::sepWidth);
+		newNode->setPositionY(preNode->node->getPositionY());
 		break;
 	case ENUM_DIR::DIR_RIGHT:
-		log("head.x=%f", head->getPositionX());
-		log("head.y=%f", head->getPositionY());
-		log("food.x=%f", food->getPositionX());
-		log("food.y=%f", food->getPositionY());
-		log("head.box.x=%f", head->boundingBox().getMaxX());
-		log("head.box.y=%f", head->boundingBox().getMaxY());
-		log("food.box.x=%f", food->node->boundingBox().getMaxX());
-		log("food.box.y=%f", food->node->boundingBox().getMaxY());
-		log("**********");
-		newNode->setPositionX(preNode->getPositionX() - Game::sepWidth);
-		newNode->setPositionY(preNode->getPositionY());
+		newNode->setPositionX(preNode->node->getPositionX() - Game::sepWidth);
+		newNode->setPositionY(preNode->node->getPositionY());
 		break;
 	case ENUM_DIR::DIR_UP:
-		newNode->setPositionX(preNode->getPositionX());
-		newNode->setPositionY(preNode->getPositionY()-Game::sepHeight);
+		newNode->setPositionX(preNode->node->getPositionX());
+		newNode->setPositionY(preNode->node->getPositionY()-Game::sepHeight);
 		break;
 	case ENUM_DIR::DIR_DOWN:
-		newNode->setPositionX(preNode->getPositionX());
-		newNode->setPositionY(preNode->getPositionY() + Game::sepHeight);
+		newNode->setPositionX(preNode->node->getPositionX());
+		newNode->setPositionY(preNode->node->getPositionY() + Game::sepHeight);
 		break;
 	}
+	newNode->m_dir=preNode->m_last_dir;
+	newNode->m_last_dir=preNode->m_last_dir;
 }
+
+
 

@@ -23,10 +23,17 @@ class SnakeNode :public Sprite
 public:
 	Sprite * node;
 	ENUM_DIR m_dir;
+	ENUM_DIR m_last_dir;
 	ENUM_TYPE nodeType;//1表示舌头，2表示身体，3表示食物
 	static SnakeNode* create(ENUM_TYPE type);
 	bool init(ENUM_TYPE type);
-	void gameLogic(float t);
+	void gameLogic();
+
+	void setPosition(float x,float y) override;
+	void setPositionX(float x) override;
+	void setPositionY(float y) override;
+	//float getPositionX() const override;
+	//float getPositionY() const override;
 private:
 	float scaleNodeX;
 	float scaleNodeY;

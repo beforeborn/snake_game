@@ -10,18 +10,20 @@ bool SnakeNode::init(ENUM_TYPE type)
 		return false;
 	}
 	this->nodeType = type;
+	this->setAnchorPoint(Point::ZERO);
 	switch (type)
 	{
 	case ENUM_TYPE::TYPE_HEAD:
 		node = Sprite::create("head.jpg");
 		node->setAnchorPoint(Point::ZERO);
 		node->setPosition(Point::ZERO);
-		m_dir = ENUM_DIR::DIR_RIGHT;
-
+		m_last_dir=m_dir = ENUM_DIR::DIR_RIGHT;
+		
 		break;
 	case ENUM_TYPE::TYPE_BODY:
 		node = Sprite::create("body.jpg");
-		m_dir = ENUM_DIR::DIR_STOP;
+		node->setAnchorPoint(Point::ZERO);
+		m_last_dir=m_dir = ENUM_DIR::DIR_STOP;
 		break;
 	case ENUM_TYPE::TYPE_FOOD:
 		node = Sprite::create("food.jpg");
@@ -30,17 +32,16 @@ bool SnakeNode::init(ENUM_TYPE type)
 
 		node->setAnchorPoint(Point::ZERO);
 		node->setPosition(row*Game::sepWidth, col*Game::sepHeight);
-		m_dir = ENUM_DIR::DIR_STOP;
+		m_last_dir=m_dir = ENUM_DIR::DIR_STOP;
 		break;
 	}
+
 	scaleNodeX = Game::sepWidth / node->getContentSize().width;
 	scaleNodeY = Game::sepHeight / node->getContentSize().height;
 	node->setScaleX(scaleNodeX);
 	node->setScaleY(scaleNodeY);
 
 	this->addChild(node);
-
-	this->schedule(schedule_selector(SnakeNode::gameLogic),0.5);
 
 	return true;
 }
@@ -62,21 +63,25 @@ SnakeNode* SnakeNode::create(ENUM_TYPE type)
 
 }
 
-void SnakeNode::gameLogic(float t)
+void SnakeNode::gameLogic()
 {
 	switch (m_dir)
 	{
 	case ENUM_DIR::DIR_RIGHT:
-		this->runAction(MoveBy::create(0.3, Point(Game::sepWidth, 0)));
+		this->node->runAction(MoveBy::create(Game::sepTime*0.8, Point(Game::sepWidth, 0)));
+		
 		break;
 	case ENUM_DIR::DIR_LEFT:
-		this->runAction(MoveBy::create(0.3, Point(-Game::sepWidth, 0)));
+		this->node->runAction(MoveBy::create(Game::sepTime*0.8, Point(-Game::sepWidth, 0)));
+		
 		break;
 	case ENUM_DIR::DIR_UP:
-		this->runAction(MoveBy::create(0.3, Point(0, Game::sepHeight)));
+		this->node->runAction(MoveBy::create(Game::sepTime*0.8, Point(0, Game::sepHeight)));
+		
 		break;
 	case ENUM_DIR::DIR_DOWN:
-		this->runAction(MoveBy::create(0.3, Point(0, -Game::sepHeight)));
+		this->node->runAction(MoveBy::create(Game::sepTime*0.8, Point(0, -Game::sepHeight)));
+		
 		break;
 	case ENUM_DIR::DIR_STOP:
 		break;
@@ -85,3 +90,29 @@ void SnakeNode::gameLogic(float t)
 	}
 
 }
+void SnakeNode::setPosition(float x,float y)
+{
+	//Sprite::setPosition(x,y);
+	this->node->setPosition(x,y);
+}
+void SnakeNode::setPositionX(float x)
+{
+	//this->setPosition(x,this->getPositionY());
+	this->node->setPosition(x,this->node->getPositionY());
+}
+
+void SnakeNode::setPositionY(float y)
+{
+	//this->setPosition(this->getPositionX(),y);
+	this->node->setPosition(this->node->getPositionX(),y);
+}
+
+//float SnakeNode::getPositionX() const 
+//{
+//	return node->getPositionX();
+//}
+//
+//float SnakeNode::getPositionY() const 
+//{
+//	return node->getPositionY();
+//}
