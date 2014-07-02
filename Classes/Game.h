@@ -19,6 +19,8 @@ public:
    //定期执行更新
 	virtual void updateFrame(float t);
 
+	void gameOver();
+
 	static float sepTime;
 	static int sepWidth;
 	static int sepHeight;

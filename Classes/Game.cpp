@@ -8,6 +8,7 @@ void setDir(SnakeNode *node, int touchX, int touchY, int nodeX, int nodeY);
 bool nodeImpact(Node * node, Rect * edage);
 void setNodeLocation(SnakeNode * newNode, SnakeNode * preNode);
 
+
 Game::Game(void)
 {
 }
@@ -106,8 +107,8 @@ bool Game::init()
 		//改变移动方向
 		int touchX = touch->getLocation().x;
 		int touchY = touch->getLocation().y;
-		int headX = head->node->getPositionX();
-		int headY = head->node->getPositionY();
+		int headX = head->node->boundingBox().getMidX();
+		int headY = head->node->boundingBox().getMinY();
 
 		setDir(head, touchX, touchY, headX, headY);
 
@@ -130,12 +131,12 @@ void setDir(SnakeNode * node, int touchX, int touchY, int nodeX, int nodeY)
 	node->m_last_dir=node->m_dir;
 	if (node->m_dir == ENUM_DIR::DIR_RIGHT || node->m_dir == ENUM_DIR::DIR_LEFT)
 	{
-		if ((touchY - nodeY) >= 60)
+		if ((touchY - nodeY) >= Game::sepHeight*0.5)
 		{
 			
 			node->m_dir = ENUM_DIR::DIR_UP;
 		}
-		else if ((nodeY - touchY) >= 60)
+		else if ((nodeY - touchY) >= Game::sepHeight*0.5)
 		{
 			node->m_dir = ENUM_DIR::DIR_DOWN;
 		}
@@ -152,11 +153,11 @@ void setDir(SnakeNode * node, int touchX, int touchY, int nodeX, int nodeY)
 	}
 	else
 	{
-		if ((touchX - nodeX) >= 60)
+		if ((touchX - nodeX) >= Game::sepWidth*0.5)
 		{
 			node->m_dir = ENUM_DIR::DIR_RIGHT;
 		}
-		else if ((nodeX - touchX) >= 60)
+		else if ((nodeX - touchX) >= Game::sepWidth*0.5)
 		{
 			node->m_dir = ENUM_DIR::DIR_LEFT;
 		}
@@ -179,13 +180,12 @@ void Game::updateFrame(float t)
 	//检测食物碰撞
 	if (head->node->boundingBox().containsPoint(Point(food->node->boundingBox().getMidX(),food->node->boundingBox().getMidY())))
 	{		
-	
 		//添加新节点，并设置其位置和方向
 		int index = allBody.size() - 1;
 		SnakeNode* preNode = allBody.at(index);
 		food->setAnchorPoint(Point::ZERO);
 		setNodeLocation(food, preNode);
-		log("food.x=%f,food.node.x=%f",food->getPositionX(),food->node->getPositionX());
+		
 		this->addBody(food);
 		food = SnakeNode::create(ENUM_TYPE::TYPE_FOOD);
 		this->addChild(food);
@@ -193,8 +193,20 @@ void Game::updateFrame(float t)
 	//检测边缘碰撞
 	if (nodeImpact(head->node, edgeRect))
 	{
-		this->menuCallBack(this);
+		this->gameOver();
+		return;
 	}
+	
+	//检测头部和身体的碰撞
+	for (int i = 1; i < allBody.size(); i++)
+	{
+		if (head->node->boundingBox().containsPoint(Point(allBody.at(i)->node->boundingBox().getMidX(), allBody.at(i)->node->boundingBox().getMidY())))
+		{
+			this->gameOver();
+			return;
+		}
+	}
+
 	//移动bodys
 	moveBodys();
 
@@ -202,6 +214,7 @@ void Game::updateFrame(float t)
 
 void Game::moveBodys()
 {
+	//设置各body的移动方向
 	for(int i=allBody.size()-1;i>=1;i--)
 	{
 		SnakeNode* cur=allBody.at(i);
@@ -231,6 +244,7 @@ void Game::moveBodys()
 		
 	}
 
+	//移动
 	for(int i=0;i<allBody.size();i++)
 	{
 		allBody.at(i)->gameLogic();
@@ -294,4 +308,12 @@ void setNodeLocation(SnakeNode * newNode, SnakeNode * preNode)
 }
 
 
-
+void Game::gameOver()
+{
+	this->cleanup();
+	Sprite* over = Sprite::create("HelloWorld.png");
+	Size size = Director::getInstance()->getWinSize();
+	Vec2 anchor=over->getAnchorPoint();
+	over->setPosition(Point(size.width / 2, size.height / 2));
+	this->addChild(over);
+}
