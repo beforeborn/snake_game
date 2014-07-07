@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MyStudy2", "MyStudy2\MyStudy2.vcxproj", "{D17FC7F4-D35C-4189-89A2-36148EF29999}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4476B18B-CE46-4FA7-85FC-35CFAB20AF5D}"
+	ProjectSection(SolutionItems) = preProject
+		MyStudy2\Util.cpp = MyStudy2\Util.cpp
+		MyStudy2\Util.h = MyStudy2\Util.h
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D17FC7F4-D35C-4189-89A2-36148EF29999}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D17FC7F4-D35C-4189-89A2-36148EF29999}.Debug|Win32.Build.0 = Debug|Win32
+		{D17FC7F4-D35C-4189-89A2-36148EF29999}.Release|Win32.ActiveCfg = Release|Win32
+		{D17FC7F4-D35C-4189-89A2-36148EF29999}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
